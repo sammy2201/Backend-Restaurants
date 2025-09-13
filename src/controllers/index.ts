@@ -1,18 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import axios from "axios";
+import { Coordinates, RestaurantQuery } from "../types/index.js";
 
 const apiKey = process.env.API_KEY;
 
-export async function getIndex(request: FastifyRequest, reply: FastifyReply) {
-  reply.status(200).send({
-    status: "success",
-    data: null,
-    message: "Welcome to the backend application!",
-  });
-}
-
-// Helper: convert location name to coordinates
-async function getCoordinates(locationName: string) {
+// Helper
+async function getCoordinates(locationName: string): Promise<Coordinates> {
   const url = "https://maps.googleapis.com/maps/api/geocode/json";
   const params = { address: locationName, key: apiKey };
   const response = await axios.get(url, { params });
@@ -25,20 +18,13 @@ async function getCoordinates(locationName: string) {
   return { lat, lng };
 }
 
-// Store tokens temporarily (for simplicity, per location string)
 const nextPageTokens: Record<string, string | null> = {};
 
 export async function getAllRestaurants(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: RestaurantQuery }>,
   reply: FastifyReply
 ) {
-  const { location, lat, lng, radius, page } = request.query as {
-    location?: string;
-    lat?: string;
-    lng?: string;
-    radius?: string;
-    page?: string;
-  };
+  const { location, lat, lng, radius, page } = request.query;
 
   if (!location && !(lat && lng)) {
     return reply.status(400).send({
@@ -49,7 +35,7 @@ export async function getAllRestaurants(
   }
 
   try {
-    let coordinates: { lat: string; lng: string };
+    let coordinates: Coordinates;
     if (location) {
       coordinates = await getCoordinates(location);
     } else {
@@ -57,7 +43,7 @@ export async function getAllRestaurants(
     }
 
     const pageNum = parseInt(page || "1", 10);
-    const key = location || `${lat},${lng}`; // store token per location
+    const key = location || `${lat},${lng}`;
 
     let params: any = {
       location: `${coordinates.lat},${coordinates.lng}`,
@@ -66,17 +52,15 @@ export async function getAllRestaurants(
       key: apiKey,
     };
 
-    // If requesting page > 1, use saved next_page_token
     if (pageNum > 1 && nextPageTokens[key]) {
       params.pagetoken = nextPageTokens[key];
-      await new Promise((res) => setTimeout(res, 2000)); // required delay
+      await new Promise((res) => setTimeout(res, 2000));
     }
 
     const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
     const response = await axios.get(url, { params });
     const results = response.data.results || [];
 
-    // Save next_page_token for the next request
     nextPageTokens[key] = response.data.next_page_token || null;
 
     reply.status(200).send({
@@ -98,10 +82,10 @@ export async function getAllRestaurants(
 }
 
 export async function getRestaurantById(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Params: { id: string } }>,
   reply: FastifyReply
 ) {
-  const { id } = request.params as { id: string };
+  const { id } = request.params;
 
   if (!id) {
     return reply.status(400).send({

@@ -1,11 +1,12 @@
-export type Request = {
-  body?: any;
-  params?: { [key: string]: string };
-  query?: { [key: string]: string };
+export type Coordinates = {
+  lat: string;
+  lng: string;
 };
 
-export type Response = {
-  status: (statusCode: number) => Response;
-  json: (data: any) => void;
-  send: (data: any) => void;
+export type RestaurantQuery = {
+  location?: string;
+  lat?: string;
+  lng?: string;
+  radius?: string;
+  page?: string;
 };
