@@ -1,0 +1,27 @@
+{
+  "name": "my-backend-app",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "A Node.js backend application using TypeScript.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.2",
+    "fastify": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.11.7",
+    "ts-node": "^10.4.0",
+    "tsx": "^4.20.5",
+    "typescript": "^4.5.4"
+  },
+  "author": "",
+  "license": "ISC"
+}
